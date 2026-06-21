@@ -192,6 +192,59 @@ export async function joinBoxAction(
   redirect(`/boxes/${box.id}`);
 }
 
+export async function publicJoinBoxAction(
+  boxId: string
+): Promise<BoxActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "You must be logged in" };
+  }
+
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+  });
+
+  if (!box) {
+    return { error: "Box not found" };
+  }
+
+  const banned = await prisma.bannedMember.findUnique({
+    where: {
+      boxId_userId: {
+        boxId: box.id,
+        userId: session.user.id,
+      },
+    },
+  });
+
+  if (banned) {
+    return { error: "You have been banned from this box" };
+  }
+
+  const existingMembership = await prisma.boxMember.findUnique({
+    where: {
+      boxId_userId: {
+        boxId: box.id,
+        userId: session.user.id,
+      },
+    },
+  });
+
+  if (existingMembership) {
+    return { error: "Already a member" };
+  }
+
+  await prisma.boxMember.create({
+    data: {
+      boxId: box.id,
+      userId: session.user.id,
+    },
+  });
+
+  revalidatePath("/boxes");
+  redirect(`/boxes/${box.id}`);
+}
+
 export async function banMemberAction(
   boxId: string,
   userId: string

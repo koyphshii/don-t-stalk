@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getUserBoxes } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, MessageSquare, Crown } from "lucide-react";
+import { Plus, Users, MessageSquare, Crown, LogIn } from "lucide-react";
+import { publicJoinBoxAction } from "@/app/actions/box-actions";
 
 const statusVariantMap = {
   COLLECTING: "collecting" as const,
@@ -24,15 +26,37 @@ const statusLabelMap = {
 };
 
 export default async function BoxesPage() {
-  const boxes = await getUserBoxes();
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  const userMemberships = userId
+    ? new Set(
+        (await prisma.boxMember.findMany({
+          where: { userId },
+          select: { boxId: true },
+        })).map((m) => m.boxId)
+      )
+    : new Set<string>();
+
+  const boxes = await prisma.box.findMany({
+    include: {
+      owner: {
+        select: { id: true, username: true },
+      },
+      _count: {
+        select: { questions: true, members: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold">Your Boxes</h1>
+          <h1 className="text-3xl font-display font-bold">Boxes</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your voting boxes or join new ones
+            All boxes — join any and start voting
           </p>
         </div>
         <Link href="/boxes/new">
@@ -51,8 +75,8 @@ export default async function BoxesPage() {
             </div>
             <h3 className="text-lg font-semibold mb-2">No boxes yet</h3>
             <p className="text-muted-foreground text-center mb-6 max-w-sm">
-              Create your first box to start collecting &quot;most likely
-              to&quot; questions, or join one via an invite link.
+              Create the first box to start collecting &quot;most likely
+              to&quot; questions.
             </p>
             <Link href="/boxes/new">
               <Button className="gap-2">
@@ -64,40 +88,66 @@ export default async function BoxesPage() {
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {boxes.map((box) => (
-            <Link key={box.id} href={`/boxes/${box.id}`}>
-              <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer group">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-                      {box.title}
-                    </CardTitle>
-                    <Badge variant={statusVariantMap[box.status]}>
-                      {statusLabelMap[box.status]}
-                    </Badge>
-                  </div>
-                  {box.isOwner && (
-                    <CardDescription className="flex items-center gap-1 text-xs">
+          {boxes.map((box) => {
+            const isOwner = box.ownerId === userId;
+            const isMember = userMemberships.has(box.id);
+            return (
+              <Card key={box.id} className="h-full flex flex-col">
+                <Link href={isMember ? `/boxes/${box.id}` : "#"} className="flex-1">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-lg line-clamp-2">
+                        {box.title}
+                      </CardTitle>
+                      <Badge variant={statusVariantMap[box.status]}>
+                        {statusLabelMap[box.status]}
+                      </Badge>
+                    </div>
+                    <CardDescription className="flex items-center gap-1 text-xs mt-1">
                       <Crown className="h-3 w-3" />
-                      You own this box
+                      {box.owner.username}
                     </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {box._count.members} members
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        {box._count.questions} questions
+                      </span>
+                    </div>
+                  </CardContent>
+                </Link>
+                <div className="px-6 pb-4 pt-0">
+                  {isOwner ? (
+                    <Link href={`/boxes/${box.id}`}>
+                      <Button size="sm" className="w-full gap-1.5">
+                        <Crown className="h-3.5 w-3.5" />
+                        Manage
+                      </Button>
+                    </Link>
+                  ) : isMember ? (
+                    <Link href={`/boxes/${box.id}`}>
+                      <Button size="sm" variant="outline" className="w-full gap-1.5">
+                        <LogIn className="h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    </Link>
+                  ) : (
+                    <form action={publicJoinBoxAction.bind(null, box.id) as unknown as (formData: FormData) => void}>
+                      <Button type="submit" size="sm" variant="secondary" className="w-full gap-1.5">
+                        <LogIn className="h-3.5 w-3.5" />
+                        Join
+                      </Button>
+                    </form>
                   )}
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {box._count.members} members
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      {box._count.questions} questions
-                    </span>
-                  </div>
-                </CardContent>
+                </div>
               </Card>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

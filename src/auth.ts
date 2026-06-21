@@ -1,10 +1,6 @@
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
-
-async function getPrisma() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
+import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
@@ -27,7 +23,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "discord" && profile) {
-        const prisma = await getPrisma();
         const discordId = profile.id as string;
         const discordUsername = (profile.username as string) || (user.name as string);
         const discordAvatar = user.image || null;

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 
 export default async function AppLayout({
   children,
@@ -25,6 +25,12 @@ export default async function AppLayout({
               koshi the bloshi
             </Link>
             <nav className="hidden sm:flex items-center gap-1">
+              <Link href="/members">
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  Members
+                </Button>
+              </Link>
               <Link href="/boxes/new">
                 <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
                   <Plus className="h-4 w-4" />

@@ -53,13 +53,6 @@ export async function submitVoteAction(
     return { error: "You must be a member of this box to vote" };
   }
 
-  const candidateIsMember = question.box.members.some(
-    (m) => m.userId === candidateId
-  );
-  if (!candidateIsMember) {
-    return { error: "Invalid candidate — they are not a member of this box" };
-  }
-
   if (!question.allowSelfVote && voterId === candidateId) {
     return { error: "Self-voting is not allowed for this question" };
   }

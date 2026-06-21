@@ -84,9 +84,7 @@ export function VotingView({
   const progressPercent = questions.length > 0 ? (votedCount / questions.length) * 100 : 0;
   const isLast = currentIndex === questions.length - 1;
 
-  const filteredCandidates = currentQuestion?.allowSelfVote
-    ? candidates
-    : candidates.filter((c) => c.id !== currentUserId);
+  const filteredCandidates = candidates;
 
   const selectedCandidate = selections[currentQuestion?.id];
 
@@ -338,12 +336,17 @@ export function VotingView({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {filteredCandidates.map((candidate) => {
                   const isSelected = selectedCandidate === candidate.id;
+                  const isSelf = candidate.id === currentUserId;
+                  const selfDisabled = !currentQuestion?.allowSelfVote && isSelf;
                   return (
                     <button
                       key={candidate.id}
-                      onClick={() => handleSelect(candidate.id)}
+                      onClick={() => !selfDisabled && handleSelect(candidate.id)}
+                      disabled={selfDisabled}
                       className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
-                        isSelected
+                        selfDisabled
+                          ? "border-border/30 bg-muted/20 opacity-40 cursor-not-allowed"
+                          : isSelected
                           ? "border-primary bg-primary/10"
                           : "border-border hover:border-primary/50 hover:bg-muted/50"
                       }`}
@@ -360,6 +363,7 @@ export function VotingView({
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm truncate font-medium">{candidate.username}</span>
+                      {selfDisabled && <span className="text-[10px] text-muted-foreground shrink-0 ml-auto">You</span>}
                       {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-auto" />}
                     </button>
                   );

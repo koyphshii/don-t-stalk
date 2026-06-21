@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${outfit.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans`}
       >
         <ThemeProvider
           attribute="class"

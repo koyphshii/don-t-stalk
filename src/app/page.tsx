@@ -56,9 +56,9 @@ export default async function LandingPage() {
 
             <div className="flex items-center justify-center gap-4 animate-slide-up [animation-delay:0.3s]">
               {session?.user ? (
-                <Link href="/boxes/new">
+                <Link href="/boxes">
                   <Button variant="neon" size="xl">
-                    Create a Box
+                    Dashboard
                   </Button>
                 </Link>
               ) : (

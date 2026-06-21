@@ -61,6 +61,13 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontSize: {
+        xs: ["0.8125rem", { lineHeight: "1.125rem" }],
+        sm: ["0.9375rem", { lineHeight: "1.375rem" }],
+        base: ["1.0625rem", { lineHeight: "1.625rem" }],
+        lg: ["1.1875rem", { lineHeight: "1.875rem" }],
+        xl: ["1.3125rem", { lineHeight: "1.875rem" }],
+      },
       fontFamily: {
         sans: ["var(--font-outfit)", "system-ui", "sans-serif"],
         display: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],

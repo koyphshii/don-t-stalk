@@ -1,0 +1,113 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum BoxStatus {
+  COLLECTING
+  VOTING
+  REVEALED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+model User {
+  id         String      @id @default(cuid())
+  username   String      @unique
+  avatarUrl  String?
+  discordId  String?     @unique
+  email      String?
+  createdAt  DateTime    @default(now())
+
+  ownedBoxes    Box[]          @relation("BoxOwner")
+  memberships   BoxMember[]
+  questions     Question[]
+  votesGiven    Vote[]         @relation("Voter")
+  votesReceived Vote[]         @relation("Candidate")
+  bans          BannedMember[]
+}
+
+model Box {
+  id              String          @id @default(cuid())
+  title           String
+  ownerId         String
+  owner           User            @relation("BoxOwner", fields: [ownerId], references: [id])
+  status          BoxStatus       @default(COLLECTING)
+  inviteToken     String          @unique @default(cuid())
+  createdAt       DateTime        @default(now())
+  votingStartedAt DateTime?
+  revealedAt      DateTime?
+
+  members        BoxMember[]
+  questions      Question[]
+  bannedMembers  BannedMember[]
+
+  @@index([ownerId])
+  @@index([inviteToken])
+}
+
+model BoxMember {
+  boxId    String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  box  Box  @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([boxId, userId])
+  @@index([userId])
+}
+
+model BannedMember {
+  boxId    String
+  userId   String
+  bannedAt DateTime @default(now())
+
+  box  Box  @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([boxId, userId])
+}
+
+model Question {
+  id            String      @id @default(cuid())
+  boxId         String
+  authorId      String
+  text          String
+  visibility    Visibility  @default(PUBLIC)
+  allowSelfVote Boolean     @default(false)
+  votingEnabled Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  box    Box    @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id])
+  votes  Vote[]
+
+  @@index([boxId])
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  questionId  String
+  voterId     String
+  candidateId String
+  createdAt   DateTime @default(now())
+
+  question  Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  voter     User     @relation("Voter", fields: [voterId], references: [id])
+  candidate User     @relation("Candidate", fields: [candidateId], references: [id])
+
+  @@unique([questionId, voterId])
+  @@index([questionId])
+  @@index([candidateId])
+  @@index([voterId])
+}

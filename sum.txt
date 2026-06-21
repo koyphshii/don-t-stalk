@@ -1,0 +1,68 @@
+================================================================================
+Koshi the Bloshi — Current Progress & Remaining Tasks
+================================================================================
+
+We have completed the core implementation of all requested features: Rebranding, 
+the Self-Voting Toggle (with server actions and UI state integration), and the 
+Discord OAuth login flow.
+
+Here is a detailed breakdown of what has been implemented and what remains to be 
+done to fully finalize and verify the system.
+
+--------------------------------------------------------------------------------
+1. WHAT WE HAVE IMPLEMENTED
+--------------------------------------------------------------------------------
+
+A. Branding Rebrand ("mosted" -> "koshi the bloshi")
+   - Updated root layout metadata (title, description, and search keywords) in 
+     src/app/layout.tsx.
+   - Rebranded landing page (src/app/page.tsx) navigation header logo and footer.
+   - Updated primary app navigation brand link logo in src/app/(app)/layout.tsx.
+   - Updated branding and headers on login/signup pages.
+
+B. Self-Vote Toggle Settings
+   - Created `toggleSelfVoteAction` server action in src/app/actions/box-actions.ts 
+     to handle updating the database `allowSelfVote` field dynamically.
+   - Integrated toggle switch into src/components/boxes/box-header.tsx, visible 
+     only to the box owner during COLLECTING and VOTING phases.
+   - Added badge indicator in the header showing the current state of self-voting.
+
+C. Discord OAuth Integration
+   - Updated prisma/schema.prisma to include `discordId` (unique) and `email` on 
+     the User model.
+   - Configured NextAuth (src/auth.ts) to support the Discord provider. Added 
+     custom `signIn` callback to automatically register new Discord users or link 
+     existing ones while gracefully resolving username collisions.
+   - Updated src/app/(auth)/login/page.tsx and signup/page.tsx with a styled 
+     Discord OAuth button and divider layout.
+   - Added `cdn.discordapp.com` to remote image patterns in next.config.ts to 
+     support Discord avatars.
+   - Updated .env.example with Discord Client ID & Client Secret placeholders.
+
+--------------------------------------------------------------------------------
+2. WHAT SHOULD BE DONE NEXT
+--------------------------------------------------------------------------------
+
+A. Push Database Changes
+   - Run Prisma db push or migrate to sync the new schema changes (specifically 
+     the new User fields: discordId, email) to the database:
+     Command: `npm run db:push` (or `npx prisma db push`)
+
+B. Provide Environment Credentials
+   - Ensure the .env file has the following variables set:
+     - `DISCORD_CLIENT_ID`
+     - `DISCORD_CLIENT_SECRET`
+     - `NEXTAUTH_SECRET` (generate one if not already set)
+     - `NEXTAUTH_URL` (normally http://localhost:3000 in dev)
+
+C. Compile & Lint Verification
+   - Build the NextJS application to verify there are no TypeScript or compilation 
+     issues, and verify Prisma client generated types successfully.
+     Command: `npm run build`
+
+D. Manual Flow Verification
+   - Verify self-voting setting toggles live in the UI when viewing a box you own, 
+     and that the status persists.
+   - Test signing in with Discord using a test account and check if user profile 
+     data (username and avatar) syncs to the User table.
+================================================================================

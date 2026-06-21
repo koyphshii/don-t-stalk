@@ -84,10 +84,6 @@ export function VotingView({
   const progressPercent = questions.length > 0 ? (votedCount / questions.length) * 100 : 0;
   const isLast = currentIndex === questions.length - 1;
 
-  const isOwnQuestion = currentQuestion?.allowSelfVote
-    ? false
-    : true;
-
   const filteredCandidates = currentQuestion?.allowSelfVote
     ? candidates
     : candidates.filter((c) => c.id !== currentUserId);

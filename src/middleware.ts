@@ -1,12 +1,24 @@
-import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { decode } from "@auth/core/jwt";
+
+const cookieName =
+  process.env.NODE_ENV === "production"
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token";
 
 export default async function middleware(request: NextRequest) {
-  const session = await auth();
   const { pathname } = request.nextUrl;
 
-  // Protected routes
+  const cookie = request.cookies.get(cookieName);
+  const session = cookie?.value
+    ? await decode({
+        token: cookie.value,
+        secret: process.env.NEXTAUTH_SECRET!,
+        salt: cookieName,
+      }).catch(() => null)
+    : null;
+
   const protectedPaths = ["/boxes", "/profile"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
@@ -16,7 +28,6 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect logged-in users away from auth pages
   const authPaths = ["/login", "/signup"];
   const isAuthPage = authPaths.some((path) => pathname.startsWith(path));
 

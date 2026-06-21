@@ -163,18 +163,15 @@ export async function getQuestionsForVoting(boxId: string) {
 
   const box = await prisma.box.findUnique({
     where: { id: boxId },
-    include: {
-      members: {
-        include: {
-          user: {
-            select: { id: true, username: true, avatarUrl: true },
-          },
-        },
-      },
-    },
+    select: { id: true },
   });
 
   if (!box) return null;
+
+  const candidates = await prisma.user.findMany({
+    select: { id: true, username: true, avatarUrl: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   return {
     questions: questions.map((q) => ({
@@ -184,7 +181,7 @@ export async function getQuestionsForVoting(boxId: string) {
       visibility: q.visibility,
       allowSelfVote: q.allowSelfVote,
     })),
-    candidates: box.members.map((m) => m.user),
+    candidates,
     currentUserId: session.user.id,
   };
 }

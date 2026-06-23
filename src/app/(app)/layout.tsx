@@ -23,7 +23,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-sm before:absolute before:inset-0 before:bg-gradient-to-b before:from-accent/5 before:to-transparent before:pointer-events-none">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <Link href="/boxes" className="text-base font-display font-bold tracking-tight hover:text-primary/80 transition-colors">

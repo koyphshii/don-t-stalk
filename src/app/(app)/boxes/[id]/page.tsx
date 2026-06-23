@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBoxWithDetails, getBoxQuestions, getVotingProgress, getQuestionsForVoting, getResultsForBox } from "@/lib/data";
 import { CollectingView } from "@/components/boxes/collecting-view";
 import { VotingView } from "@/components/boxes/voting-view";
+import { ClosedView } from "@/components/boxes/closed-view";
 import { RevealedView } from "@/components/boxes/revealed-view";
 import { BoxHeader } from "@/components/boxes/box-header";
 
@@ -44,6 +45,12 @@ export default async function BoxPage({ params }: BoxPageProps) {
       {box.status === "VOTING" && (
         <Suspense fallback={<div className="h-48 bg-muted/20 rounded animate-pulse" />}>
           <VotingViewWrapper boxId={id} isOwner={box.isOwner} />
+        </Suspense>
+      )}
+
+      {box.status === "CLOSED" && (
+        <Suspense fallback={<div className="h-48 bg-muted/20 rounded animate-pulse" />}>
+          <ClosedViewWrapper boxId={id} isOwner={box.isOwner} />
         </Suspense>
       )}
 
@@ -99,6 +106,17 @@ async function VotingViewWrapper({
       isOwner={isOwner}
     />
   );
+}
+
+async function ClosedViewWrapper({
+  boxId,
+  isOwner,
+}: {
+  boxId: string;
+  isOwner: boolean;
+}) {
+  const results = isOwner ? await getResultsForBox(boxId) : null;
+  return <ClosedView boxId={boxId} isOwner={isOwner} results={results} />;
 }
 
 async function RevealedViewWrapper({ boxId }: { boxId: string }) {

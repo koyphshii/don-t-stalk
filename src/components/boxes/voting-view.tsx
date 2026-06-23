@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { submitVoteAction } from "@/app/actions/vote-actions";
-import { advanceToRevealedAction } from "@/app/actions/box-actions";
+import { closeVotingAction } from "@/app/actions/box-actions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Check,
   AlertCircle,
-  Trophy,
+  Lock,
   Eye,
   EyeOff,
   LogOut,
@@ -72,8 +72,8 @@ export function VotingView({
     return initial;
   });
   const [error, setError] = useState<string | null>(null);
-  const [revealError, setRevealError] = useState<string | null>(null);
-  const [isRevealing, setIsRevealing] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(() => {
     return questions.length > 0 && questions.every((q) => q.userVote);
@@ -131,21 +131,21 @@ export function VotingView({
     setSubmitted(true);
   };
 
-  const handleReveal = async () => {
+  const handleEndVoting = async () => {
     if (
       !confirm(
-        "Are you sure you want to end voting and reveal results? This action is permanent and cannot be undone."
+        "End voting? Members won't be able to vote anymore. You can reveal results later."
       )
     ) {
       return;
     }
-    setIsRevealing(true);
-    setRevealError(null);
-    const result = await advanceToRevealedAction(boxId);
+    setIsClosing(true);
+    setCloseError(null);
+    const result = await closeVotingAction(boxId);
     if (result.error) {
-      setRevealError(result.error);
+      setCloseError(result.error);
     }
-    setIsRevealing(false);
+    setIsClosing(false);
   };
 
   if (questions.length === 0) {
@@ -162,28 +162,28 @@ export function VotingView({
         {isOwner && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
             <div>
-              <p className="text-sm font-medium">Ready to reveal results?</p>
+              <p className="text-sm font-medium">All votes are in</p>
               <p className="text-xs text-muted-foreground">
-                This will permanently end voting for all members.
+                End voting to close submissions and preview results.
               </p>
             </div>
             <Button
-              onClick={handleReveal}
-              disabled={isRevealing}
+              onClick={handleEndVoting}
+              disabled={isClosing}
               variant="default"
               size="sm"
               className="gap-1"
             >
-              <Trophy className="h-3.5 w-3.5" />
-              {isRevealing ? "Revealing..." : "Reveal Results"}
+              <Lock className="h-3.5 w-3.5" />
+              {isClosing ? "Closing..." : "End Voting"}
             </Button>
           </div>
         )}
 
-        {revealError && (
-          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+        {closeError && (
+          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            {revealError}
+            {closeError}
           </div>
         )}
 
@@ -268,28 +268,28 @@ export function VotingView({
       {isOwner && (
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
           <div>
-            <p className="text-sm font-medium">Ready to reveal results?</p>
+            <p className="text-sm font-medium">Manage voting</p>
             <p className="text-xs text-muted-foreground">
-              This will permanently end voting for all members.
+              End voting when everyone has submitted.
             </p>
           </div>
           <Button
-            onClick={handleReveal}
-            disabled={isRevealing}
+            onClick={handleEndVoting}
+            disabled={isClosing}
             variant="default"
             size="sm"
             className="gap-1"
           >
-            <Trophy className="h-3.5 w-3.5" />
-            {isRevealing ? "Revealing..." : "Reveal Results"}
+            <Lock className="h-3.5 w-3.5" />
+            {isClosing ? "Closing..." : "End Voting"}
           </Button>
         </div>
       )}
 
-      {revealError && (
+      {closeError && (
         <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          {revealError}
+          {closeError}
         </div>
       )}
 

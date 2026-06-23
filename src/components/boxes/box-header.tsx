@@ -19,7 +19,7 @@ interface BoxHeaderProps {
   box: {
     id: string;
     title: string;
-    status: "COLLECTING" | "VOTING" | "REVEALED";
+    status: "COLLECTING" | "VOTING" | "CLOSED" | "REVEALED";
     inviteToken: string;
     isOwner: boolean;
     members: Array<{
@@ -37,9 +37,10 @@ interface BoxHeaderProps {
   };
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { variant: "collecting" | "voting" | "revealed"; label: string }> = {
   COLLECTING: { variant: "collecting" as const, label: "Collecting Questions" },
-  VOTING: { variant: "voting" as const, label: "Voting" },
+  VOTING: { variant: "voting" as const, label: "Voting Open" },
+  CLOSED: { variant: "voting" as const, label: "Voting Closed" },
   REVEALED: { variant: "revealed" as const, label: "Results Ready" },
 };
 

@@ -102,6 +102,41 @@ export async function advanceToVotingAction(
   return { success: true };
 }
 
+export async function closeVotingAction(
+  boxId: string
+): Promise<BoxActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "You must be logged in" };
+  }
+
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+  });
+
+  if (!box) {
+    return { error: "Box not found" };
+  }
+
+  if (box.ownerId !== session.user.id) {
+    return { error: "Only the box owner can close voting" };
+  }
+
+  if (box.status !== BoxStatus.VOTING) {
+    return { error: "Box is not in VOTING status" };
+  }
+
+  await prisma.box.update({
+    where: { id: boxId },
+    data: {
+      status: BoxStatus.CLOSED,
+    },
+  });
+
+  revalidatePath(`/boxes/${boxId}`);
+  return { success: true };
+}
+
 export async function advanceToRevealedAction(
   boxId: string
 ): Promise<BoxActionResult> {
@@ -122,8 +157,8 @@ export async function advanceToRevealedAction(
     return { error: "Only the box owner can reveal results" };
   }
 
-  if (box.status !== BoxStatus.VOTING) {
-    return { error: "Box is not in VOTING status" };
+  if (box.status !== BoxStatus.CLOSED) {
+    return { error: "Box must be in CLOSED status before revealing" };
   }
 
   await prisma.box.update({

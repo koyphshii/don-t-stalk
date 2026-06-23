@@ -13,15 +13,17 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Users, MessageSquare, Crown, LogIn } from "lucide-react";
 import { publicJoinBoxAction } from "@/app/actions/box-actions";
 
-const statusVariantMap = {
+const statusVariantMap: Record<string, "collecting" | "voting" | "revealed"> = {
   COLLECTING: "collecting" as const,
   VOTING: "voting" as const,
+  CLOSED: "voting" as const,
   REVEALED: "revealed" as const,
 };
 
-const statusLabelMap = {
+const statusLabelMap: Record<string, string> = {
   COLLECTING: "Collecting Questions",
-  VOTING: "Voting",
+  VOTING: "Voting Open",
+  CLOSED: "Voting Closed",
   REVEALED: "Results Ready",
 };
 

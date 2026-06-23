@@ -89,7 +89,7 @@ export async function getResultsForBox(
     },
   });
 
-  if (!box || box.status !== "REVEALED") return null;
+  if (!box || (box.status !== "REVEALED" && box.status !== "CLOSED")) return null;
 
   const buildTally = (
     votes: Array<{

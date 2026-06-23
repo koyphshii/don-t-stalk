@@ -1,51 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --font-pixel: 'DotGothic16', monospace;
+    --background: 350 30% 98%;
+    --foreground: 350 25% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 350 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --popover-foreground: 350 25% 12%;
+    --primary: 0 100% 66%; /* Reimu Red (#ff5252) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 350 20% 94%;
+    --secondary-foreground: 0 100% 66%;
+    --muted: 350 15% 92%;
+    --muted-foreground: 350 10% 45%;
+    --accent: 350 25% 93%;
+    --accent-foreground: 0 100% 66%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 0 0% 9%;
-    --radius: 0.75rem;
+    --border: 0 80% 86%; /* Soft red border (#ffc8c8) */
+    --input: 0 80% 86%;
+    --ring: 0 100% 66%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 260 15% 5%;
-    --foreground: 260 10% 92%;
-    --card: 260 12% 7%;
-    --card-foreground: 260 10% 92%;
-    --popover: 260 12% 7%;
-    --popover-foreground: 260 10% 92%;
-    --primary: 260 10% 92%;
-    --primary-foreground: 260 15% 5%;
-    --secondary: 260 8% 12%;
-    --secondary-foreground: 260 10% 92%;
-    --muted: 260 8% 12%;
-    --muted-foreground: 260 5% 55%;
-    --accent: 260 8% 14%;
-    --accent-foreground: 260 10% 92%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 260 10% 92%;
-    --border: 260 8% 14%;
-    --input: 260 8% 14%;
-    --ring: 260 10% 70%;
+    --background: 350 40% 6%; /* Deep wine dark (#150709) */
+    --foreground: 350 30% 94%;
+    --card: 350 35% 9%; /* Wine dark card (#220d10) */
+    --card-foreground: 350 30% 94%;
+    --popover: 350 35% 9%;
+    --popover-foreground: 350 30% 94%;
+    --primary: 355 100% 72%; /* Reimu Light Red (#ff7171) */
+    --primary-foreground: 350 40% 6%;
+    --secondary: 350 25% 14%;
+    --secondary-foreground: 355 100% 72%;
+    --muted: 350 20% 13%;
+    --muted-foreground: 350 12% 60%;
+    --accent: 350 25% 16%;
+    --accent-foreground: 355 100% 72%;
+    --destructive: 0 75% 45%;
+    --destructive-foreground: 350 30% 94%;
+    --border: 350 30% 18%; /* Dark wine border (#381c20) */
+    --input: 350 30% 18%;
+    --ring: 355 100% 72%;
   }
 }
 
@@ -59,21 +62,34 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(ellipse at 50% 0%, hsl(260 30% 10% / 0.4), transparent 60%),
-                      radial-gradient(ellipse at 80% 50%, hsl(280 20% 8% / 0.3), transparent 50%),
-                      radial-gradient(ellipse at 20% 80%, hsl(240 15% 6% / 0.2), transparent 50%);
+    background-image: radial-gradient(ellipse at 50% 0%, hsl(0 100% 66% / 0.07), transparent 60%),
+                      radial-gradient(ellipse at 85% 45%, hsl(355 100% 72% / 0.03), transparent 50%),
+                      radial-gradient(ellipse at 15% 85%, hsl(350 40% 10% / 0.05), transparent 50%);
   }
 }
 
+/* Custom Cursors - Touhou Reimu cursor set */
+html, body {
+  cursor: url('/images/cursor/reimu-cursor-default.png'), auto;
+}
+
+a, button, [role="button"], select, option, summary, .cursor-pointer {
+  cursor: url('/images/cursor/reimu-cursor-pointer.png'), pointer !important;
+}
+
+input, textarea, [contenteditable="true"] {
+  cursor: url('/images/cursor/reimu-cursor-text.png'), text !important;
+}
+
 .subtle-text {
-  background: linear-gradient(135deg, #e8e0ff, #a090c0);
+  background: linear-gradient(135deg, #ffa5a5, #ff5252);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .anime-glow {
-  box-shadow: 0 0 30px rgba(180, 160, 255, 0.04);
+  box-shadow: 0 0 30px rgba(255, 82, 82, 0.08);
 }
 
 .grain-overlay::after {
@@ -82,26 +98,79 @@
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.025;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
 }
 
-/* decorative corner accent */
-.corner-accent::before {
-  content: "◆";
+/* Ofuda / Talisman Card Aesthetic */
+.talisman-card {
+  position: relative;
+  border: 2px solid hsl(var(--primary) / 0.7);
+  background: hsl(var(--card));
+  border-radius: 4px;
+  box-shadow: 4px 4px 0px hsl(var(--primary) / 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.talisman-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0px hsl(var(--primary) / 0.35);
+}
+
+.talisman-card::before {
+  content: "";
   position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 8px;
-  color: hsl(260 30% 40% / 0.15);
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px dashed hsl(var(--primary) / 0.3);
+  border-radius: 2px;
   pointer-events: none;
+}
+
+/* Ofuda Header tag */
+.talisman-tag {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-space-grotesk), monospace;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Sakura Petals Shower Styles */
+.sakura-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.sakura-petal {
+  position: absolute;
+  background: linear-gradient(135deg, #ffb7c5 0%, #ff9ebb 100%);
+  border-radius: 100% 0 100% 100%;
+  pointer-events: none;
+  opacity: 0.75;
+  animation-fill-mode: both;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -109,22 +178,23 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.4);
-  border-radius: 3px;
+  background: hsl(var(--primary) / 0.25);
+  border-radius: 4px;
+  border: 2px solid hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--foreground) / 0.5);
+  background: hsl(var(--primary) / 0.5);
 }
 
-/* Page transitions */
+/* Page transitions & slide-up keyframes */
 .page-enter {
-  animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slide-up {
   from {
-    transform: translateY(8px);
+    transform: translateY(12px);
     opacity: 0;
   }
   to {
@@ -133,19 +203,15 @@
   }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes rotate-yin-yang {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.2); }
-}
-
-/* Glass morphism card */
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.spin-yin-yang {
+  animation: rotate-yin-yang 6s linear infinite;
 }

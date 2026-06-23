@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { BoxStatus } from "@prisma/client";
+import { BoxStatus, Prisma } from "@prisma/client";
 
 const createBoxSchema = z.object({
   title: z
@@ -181,12 +181,18 @@ export async function joinBoxAction(
     redirect(`/boxes/${box.id}`);
   }
 
-  await prisma.boxMember.create({
-    data: {
-      boxId: box.id,
-      userId: session.user.id,
-    },
-  });
+  try {
+    await prisma.boxMember.create({
+      data: {
+        boxId: box.id,
+        userId: session.user.id,
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
+      throw error;
+    }
+  }
 
   revalidatePath(`/boxes/${box.id}`);
   redirect(`/boxes/${box.id}`);
@@ -234,12 +240,18 @@ export async function publicJoinBoxAction(
     return { error: "Already a member" };
   }
 
-  await prisma.boxMember.create({
-    data: {
-      boxId: box.id,
-      userId: session.user.id,
-    },
-  });
+  try {
+    await prisma.boxMember.create({
+      data: {
+        boxId: box.id,
+        userId: session.user.id,
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
+      throw error;
+    }
+  }
 
   revalidatePath("/boxes");
   redirect(`/boxes/${box.id}`);

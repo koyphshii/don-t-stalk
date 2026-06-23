@@ -14,8 +14,8 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        neon: "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]",
-        "neon-outline": "border-2 border-white/30 text-white hover:bg-white/10 shadow-[0_0_10px_rgba(255,255,255,0.05)]",
+        neon: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(255,82,82,0.2)] hover:shadow-[0_0_30px_rgba(255,82,82,0.35)] border-none",
+        "neon-outline": "border-2 border-primary/40 text-primary hover:bg-primary/10 shadow-[0_0_10px_rgba(255,82,82,0.08)]",
       },
       size: {
         default: "h-10 px-4 py-2",

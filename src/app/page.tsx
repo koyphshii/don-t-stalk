@@ -41,15 +41,15 @@ export default async function LandingPage() {
           <div className="flex items-center gap-3">
             {session?.user ? (
               <Link href="/boxes">
-                <Button variant="outline" size="sm" className="gap-1 border-primary/30 hover:border-primary/60 bg-card">
+                <Button size="sm" className="gap-1 bg-white text-black border-0 shadow-lg shadow-white/10 hover:bg-white/90 px-4">
                   Dashboard
-                  <ArrowRight className="h-4 w-4 text-primary" />
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
               <Link href="/login">
-                <Button variant="outline" size="sm" className="gap-1 border-primary/30 hover:border-primary/60 bg-card">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <Button size="sm" className="gap-1 bg-white text-black border-0 shadow-lg shadow-white/10 hover:bg-white/90 px-4">
+                  <Sparkles className="h-3.5 w-3.5" />
                   Log In
                 </Button>
               </Link>
@@ -75,7 +75,7 @@ export default async function LandingPage() {
                   alt="reimu pixel avatar" 
                 />
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary font-medium backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs text-white/80 font-medium backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
                 your friend group&apos;s most unhinged takes, quantified
                 <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
@@ -86,15 +86,15 @@ export default async function LandingPage() {
               <span className="block text-foreground">who&apos;s</span>
               <span className="block subtle-text py-2">most likely</span>
               <span className="block text-foreground">to</span>
-              <span className="block text-primary/30 text-3xl sm:text-5xl lg:text-6xl mt-4 font-mono italic tracking-widest">
+              <span className="block text-white/20 text-3xl sm:text-5xl lg:text-6xl mt-4 font-mono italic tracking-widest">
                 ________?
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-10 animate-slide-up [animation-delay:0.2s] leading-relaxed">
+            <p className="text-base sm:text-lg text-white/60 max-w-xl mx-auto mb-10 animate-slide-up [animation-delay:0.2s] leading-relaxed">
               Create a box. Drop your questions. Vote on your friends.
               <br />
-              <span className="text-primary/40 text-sm font-mono block mt-2">
+              <span className="text-white/30 text-sm font-mono block mt-2">
                 ✦ lunatic difficulty voting — no cap, absolute main character energy ✦
               </span>
             </p>
@@ -102,21 +102,21 @@ export default async function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up [animation-delay:0.3s]">
               {session?.user ? (
                 <Link href="/boxes" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto gap-2 text-md font-bold px-8 py-6 talisman-card bg-primary hover:bg-primary/90 text-primary-foreground border-none">
+                  <Button className="w-full sm:w-auto gap-2 text-md font-bold px-10 py-6 bg-white text-black border-0 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.25)] hover:bg-white/90 transition-all duration-300">
                     Go to Dashboard
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
               ) : (
                 <>
                   <Link href="/login" className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto gap-2 text-md font-bold px-8 py-6 talisman-card bg-primary hover:bg-primary/90 text-primary-foreground border-none">
-                      <Sparkles className="h-4 w-4 animate-pulse" />
+                    <Button className="w-full sm:w-auto gap-2 text-md font-bold px-10 py-6 bg-white text-black border-0 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.25)] hover:bg-white/90 transition-all duration-300">
+                      <Sparkles className="h-5 w-5" />
                       Get Started
                     </Button>
                   </Link>
                   <Link href="/login" className="w-full sm:w-auto">
-                    <Button variant="outline" className="w-full sm:w-auto text-md font-bold px-8 py-6 border-2 border-primary/40 hover:border-primary/80 bg-background text-foreground hover:bg-primary/5">
+                    <Button variant="outline" className="w-full sm:w-auto text-md font-bold px-8 py-6 border-2 border-white/30 hover:border-white/60 bg-transparent text-white hover:bg-white/10 shadow-lg shadow-white/5">
                       I Have an Account
                     </Button>
                   </Link>

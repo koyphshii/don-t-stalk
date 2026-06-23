@@ -1,9 +1,14 @@
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, LogOut } from "lucide-react";
+
+async function logoutAction() {
+  "use server";
+  await signOut({ redirectTo: "/login" });
+}
 
 export default async function AppLayout({
   children,
@@ -40,7 +45,7 @@ export default async function AppLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Avatar className="h-7 w-7">
                 {session.user.avatarUrl && (
@@ -54,6 +59,11 @@ export default async function AppLayout({
                 {session.user.username}
               </span>
             </Link>
+            <form action={logoutAction}>
+              <Button variant="ghost" size="sm" className="text-muted-foreground">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </form>
           </div>
         </div>
       </header>

@@ -22,6 +22,7 @@ import {
   EyeOff,
   LogOut,
   Loader2,
+  SkipForward,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -84,6 +85,7 @@ export function VotingView({
   const progressPercent = questions.length > 0 ? (votedCount / questions.length) * 100 : 0;
   const isLast = currentIndex === questions.length - 1;
 
+  const SKIP_VALUE = "__skip__";
   const filteredCandidates = candidates;
 
   const selectedCandidate = selections[currentQuestion?.id];
@@ -111,7 +113,9 @@ export function VotingView({
     setIsSubmitting(true);
     setError(null);
 
-    const entries = Object.entries(selections);
+    const entries = Object.entries(selections).filter(
+      ([, cId]) => cId !== SKIP_VALUE
+    );
     const results = await Promise.all(
       entries.map(([qId, cId]) => submitVoteAction(qId, cId))
     );
@@ -206,20 +210,25 @@ export function VotingView({
               >
                 <span className="text-xs text-muted-foreground/60 font-mono w-6 shrink-0">#{i + 1}</span>
                 <p className="text-sm truncate flex-1">{q.text}</p>
-                {candidate && (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Avatar className="h-6 w-6">
-                      {candidate.avatarUrl && (
-                        <AvatarImage src={candidate.avatarUrl} alt={candidate.username} />
-                      )}
-                      <AvatarFallback className="text-[10px]">
-                        {candidate.username[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{candidate.username}</span>
-                  </div>
-                )}
-                <Check className="h-4 w-4 text-primary shrink-0" />
+                  {votedId === SKIP_VALUE ? (
+                    <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
+                      <SkipForward className="h-4 w-4" />
+                      <span className="text-sm font-medium">Skipped</span>
+                    </div>
+                  ) : candidate ? (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Avatar className="h-6 w-6">
+                        {candidate.avatarUrl && (
+                          <AvatarImage src={candidate.avatarUrl} alt={candidate.username} />
+                        )}
+                        <AvatarFallback className="text-[10px]">
+                          {candidate.username[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium">{candidate.username}</span>
+                    </div>
+                  ) : null}
+                  <Check className="h-4 w-4 text-primary shrink-0" />
               </div>
             );
           })}
@@ -334,6 +343,26 @@ export function VotingView({
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {/* Skip option - always first */}
+                  <button
+                    onClick={() => handleSelect(SKIP_VALUE)}
+                    className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
+                      selectedCandidate === SKIP_VALUE
+                        ? "border-muted-foreground/50 bg-muted/30"
+                        : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${
+                      selectedCandidate === SKIP_VALUE
+                        ? "bg-muted-foreground text-background"
+                        : "bg-secondary text-muted-foreground"
+                    }`}>
+                      <SkipForward className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm truncate font-medium text-muted-foreground">Skip</span>
+                    {selectedCandidate === SKIP_VALUE && <Check className="h-4 w-4 text-muted-foreground shrink-0 ml-auto" />}
+                  </button>
+
                 {filteredCandidates.map((candidate) => {
                   const isSelected = selectedCandidate === candidate.id;
                   const isSelf = candidate.id === currentUserId;

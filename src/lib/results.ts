@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-export type PublicQuestionResult = {
+export type QuestionResult = {
   questionId: string;
   questionText: string;
+  visibility: "PUBLIC" | "PRIVATE";
   votes: Array<{
     voterUsername: string;
     voterAvatarUrl: string | null;
@@ -17,22 +18,7 @@ export type PublicQuestionResult = {
     voteCount: number;
   }>;
   winner: {
-    candidateUsername: string;
-    candidateAvatarUrl: string | null;
-    voteCount: number;
-  } | null;
-};
-
-export type PrivateQuestionResult = {
-  questionId: string;
-  questionText: string;
-  tally: Array<{
     candidateId: string;
-    candidateUsername: string;
-    candidateAvatarUrl: string | null;
-    voteCount: number;
-  }>;
-  winner: {
     candidateUsername: string;
     candidateAvatarUrl: string | null;
     voteCount: number;
@@ -43,7 +29,7 @@ export type BoxResults = {
   boxTitle: string;
   totalMembers: number;
   totalQuestions: number;
-  questions: PublicQuestionResult[] | PrivateQuestionResult[];
+  questions: QuestionResult[];
 };
 
 export async function getResultsForBox(
@@ -127,29 +113,19 @@ export async function getResultsForBox(
 
   const questions = box.questions.map((q) => {
     const tally = buildTally(q.votes);
-    if (q.visibility === "PUBLIC") {
-      const publicResult: PublicQuestionResult = {
-        questionId: q.id,
-        questionText: q.text,
-        votes: q.votes.map((v) => ({
-          voterUsername: v.voter.username,
-          voterAvatarUrl: v.voter.avatarUrl,
-          candidateUsername: v.candidate.username,
-          candidateAvatarUrl: v.candidate.avatarUrl,
-        })),
-        tally,
-        winner: tally[0] || null,
-      };
-      return publicResult;
-    } else {
-      const privateResult: PrivateQuestionResult = {
-        questionId: q.id,
-        questionText: q.text,
-        tally,
-        winner: tally[0] || null,
-      };
-      return privateResult;
-    }
+    return {
+      questionId: q.id,
+      questionText: q.text,
+      visibility: q.visibility,
+      votes: q.votes.map((v) => ({
+        voterUsername: v.voter.username,
+        voterAvatarUrl: v.voter.avatarUrl,
+        candidateUsername: v.candidate.username,
+        candidateAvatarUrl: v.candidate.avatarUrl,
+      })),
+      tally,
+      winner: tally[0] || null,
+    };
   });
 
   return {

@@ -3,7 +3,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Eye, EyeOff, Crown } from "lucide-react";
-import type { BoxResults, PublicQuestionResult, PrivateQuestionResult } from "@/lib/results";
+import type { BoxResults, QuestionResult } from "@/lib/results";
 
 interface RevealedViewProps {
   results: BoxResults;
@@ -56,7 +56,7 @@ export function RevealedView({ results }: RevealedViewProps) {
   );
 }
 
-function QuestionCard({ question, index }: { question: PublicQuestionResult | PrivateQuestionResult; index: number }) {
+function QuestionCard({ question, index }: { question: QuestionResult; index: number }) {
   const isPublic = "votes" in question;
   const maxVotes = question.tally[0]?.voteCount ?? 0;
 
@@ -149,14 +149,14 @@ function QuestionCard({ question, index }: { question: PublicQuestionResult | Pr
       </div>
 
       {/* Public vote breakdown */}
-      {isPublic && (question as PublicQuestionResult).votes.length > 0 && (
+      {isPublic && question.votes.length > 0 && (
         <details className="group border-t border-border/30">
           <summary className="px-5 py-3 text-xs text-muted-foreground/60 cursor-pointer hover:text-foreground/80 transition-colors select-none list-none flex items-center gap-1.5">
             <span className="group-open:rotate-90 transition-transform">&#9654;</span>
             View individual votes ({question.tally.reduce((s, t) => s + t.voteCount, 0)} total)
           </summary>
           <div className="px-5 pb-4 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-            {(question as PublicQuestionResult).votes.map((vote, vi) => (
+            {question.votes.map((vote, vi) => (
               <div
                 key={vi}
                 className="flex items-center gap-1.5 p-2 rounded-lg bg-muted/30 text-xs"

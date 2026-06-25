@@ -14,6 +14,7 @@ import {
   Trophy,
   AlertCircle,
   Eye,
+  ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { BoxResults } from "@/lib/results";
@@ -140,6 +141,40 @@ export function ClosedView({ boxId, isOwner, results }: ClosedViewProps) {
                     )}
                   </div>
                 ))}
+
+                {/* Individual vote breakdown */}
+                {q.votes.length > 0 && (
+                  <details className="group mt-2 border-t border-border/20 pt-2">
+                    <summary className="text-xs text-muted-foreground/60 hover:text-foreground/80 cursor-pointer transition-colors select-none list-none flex items-center gap-1.5 py-1">
+                      <ChevronRight className="h-3 w-3 group-open:rotate-90 transition-transform" />
+                      Who voted for whom ({q.votes.length} votes)
+                    </summary>
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {q.votes.map((vote, vi) => (
+                        <div
+                          key={vi}
+                          className="flex items-center gap-1.5 p-1.5 rounded-lg bg-muted/30 text-[11px]"
+                        >
+                          <Avatar className="h-5 w-5">
+                            {vote.voterAvatarUrl && <AvatarImage src={vote.voterAvatarUrl} />}
+                            <AvatarFallback className="text-[8px] bg-secondary">
+                              {vote.voterUsername[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-muted-foreground truncate">{vote.voterUsername}</span>
+                          <span className="text-muted-foreground/30">&rarr;</span>
+                          <Avatar className="h-5 w-5">
+                            {vote.candidateAvatarUrl && <AvatarImage src={vote.candidateAvatarUrl} />}
+                            <AvatarFallback className="text-[8px] bg-secondary">
+                              {vote.candidateUsername[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{vote.candidateUsername}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </CardContent>
             </Card>
           ))}

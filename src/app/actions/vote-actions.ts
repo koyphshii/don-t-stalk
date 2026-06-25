@@ -128,6 +128,43 @@ export async function getVotingProgress(
   };
 }
 
+export async function getCurrentVotesForOwner(boxId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+    select: { ownerId: true },
+  });
+
+  if (!box || box.ownerId !== session.user.id) return null;
+
+  const questions = await prisma.question.findMany({
+    where: { boxId, votingEnabled: true },
+    include: {
+      votes: {
+        include: {
+          voter: { select: { username: true, avatarUrl: true } },
+          candidate: { select: { username: true, avatarUrl: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return questions.map((q) => ({
+    questionId: q.id,
+    questionText: q.text,
+    visibility: q.visibility,
+    votes: q.votes.map((v) => ({
+      voterUsername: v.voter.username,
+      voterAvatarUrl: v.voter.avatarUrl,
+      candidateUsername: v.candidate.username,
+      candidateAvatarUrl: v.candidate.avatarUrl,
+    })),
+  }));
+}
+
 export async function getQuestionsForVoting(boxId: string) {
   const session = await auth();
   if (!session?.user?.id) return null;

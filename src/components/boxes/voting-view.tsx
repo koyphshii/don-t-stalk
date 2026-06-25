@@ -26,6 +26,18 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+interface LiveVotesData {
+  questionId: string;
+  questionText: string;
+  visibility: "PUBLIC" | "PRIVATE";
+  votes: Array<{
+    voterUsername: string;
+    voterAvatarUrl: string | null;
+    candidateUsername: string;
+    candidateAvatarUrl: string | null;
+  }>;
+}
+
 interface VotingViewProps {
   boxId: string;
   questions: Array<{
@@ -47,6 +59,7 @@ interface VotingViewProps {
     votedQuestionIds: string[];
   };
   isOwner: boolean;
+  liveVotes: LiveVotesData[] | null;
 }
 
 export function VotingView({
@@ -56,6 +69,7 @@ export function VotingView({
   currentUserId,
   progress,
   isOwner,
+  liveVotes,
 }: VotingViewProps) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -184,6 +198,48 @@ export function VotingView({
           <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {closeError}
+          </div>
+        )}
+
+        {/* Owner live votes */}
+        {isOwner && liveVotes && liveVotes.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              <Eye className="h-3.5 w-3.5" />
+              Live votes — who&apos;s voted so far
+            </h3>
+            {liveVotes.map((qv) => (
+              <details key={qv.questionId} className="group rounded-lg border border-border/50 bg-muted/10">
+                <summary className="px-4 py-2.5 text-sm font-medium cursor-pointer hover:bg-muted/20 transition-colors list-none flex items-center gap-1.5">
+                  <ChevronRight className="h-3 w-3 group-open:rotate-90 transition-transform shrink-0 text-muted-foreground" />
+                  <span className="truncate">{qv.questionText}</span>
+                  <span className="text-xs text-muted-foreground ml-auto shrink-0">
+                    {qv.votes.length} vote{qv.votes.length !== 1 ? "s" : ""}
+                  </span>
+                </summary>
+                <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {qv.votes.map((v, vi) => (
+                    <div key={vi} className="flex items-center gap-1.5 p-1.5 rounded-lg bg-muted/30 text-[11px]">
+                      <Avatar className="h-5 w-5">
+                        {v.voterAvatarUrl && <AvatarImage src={v.voterAvatarUrl} />}
+                        <AvatarFallback className="text-[8px] bg-secondary">
+                          {v.voterUsername[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-muted-foreground truncate">{v.voterUsername}</span>
+                      <span className="text-muted-foreground/30">&rarr;</span>
+                      <Avatar className="h-5 w-5">
+                        {v.candidateAvatarUrl && <AvatarImage src={v.candidateAvatarUrl} />}
+                        <AvatarFallback className="text-[8px] bg-secondary">
+                          {v.candidateUsername[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{v.candidateUsername}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ))}
           </div>
         )}
 

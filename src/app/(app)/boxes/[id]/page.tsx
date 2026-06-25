@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getBoxWithDetails, getBoxQuestions, getVotingProgress, getQuestionsForVoting, getResultsForBox } from "@/lib/data";
+import { getCurrentVotesForOwner } from "@/app/actions/vote-actions";
 import { CollectingView } from "@/components/boxes/collecting-view";
 import { VotingView } from "@/components/boxes/voting-view";
 import { ClosedView } from "@/components/boxes/closed-view";
@@ -87,9 +88,10 @@ async function VotingViewWrapper({
   boxId: string;
   isOwner: boolean;
 }) {
-  const [votingData, progress] = await Promise.all([
+  const [votingData, progress, liveVotes] = await Promise.all([
     getQuestionsForVoting(boxId),
     getVotingProgress(boxId),
+    isOwner ? getCurrentVotesForOwner(boxId) : Promise.resolve(null),
   ]);
 
   if (!votingData || !progress) {
@@ -104,6 +106,7 @@ async function VotingViewWrapper({
       currentUserId={votingData.currentUserId}
       progress={progress}
       isOwner={isOwner}
+      liveVotes={liveVotes}
     />
   );
 }

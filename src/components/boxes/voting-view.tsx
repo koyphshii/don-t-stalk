@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { submitVoteAction, getPreviewResultsAction } from "@/app/actions/vote-actions";
+import { submitVoteAction, deleteVoteAction, getPreviewResultsAction } from "@/app/actions/vote-actions";
 import { closeVotingAction } from "@/app/actions/box-actions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -95,9 +95,7 @@ export function VotingView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewResults, setPreviewResults] = useState<BoxResults | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [submitted, setSubmitted] = useState(() => {
-    return questions.length > 0 && questions.every((q) => q.userVote);
-  });
+  const [submitted, setSubmitted] = useState(false);
 
   const currentQuestion = questions[currentIndex];
   const votedCount = Object.keys(selections).length;
@@ -110,10 +108,27 @@ export function VotingView({
 
   const selectedCandidate = selections[currentQuestion?.id];
 
-  const handleSelect = (candidateId: string) => {
+  const handleSelect = async (candidateId: string) => {
     if (submitted) return;
     setError(null);
+    const prevSelection = selections[currentQuestion.id];
     setSelections((prev) => ({ ...prev, [currentQuestion.id]: candidateId }));
+
+    if (candidateId === SKIP_VALUE) {
+      if (prevSelection && prevSelection !== SKIP_VALUE) {
+        const result = await deleteVoteAction(currentQuestion.id);
+        if (result.error) {
+          setError(result.error);
+          setSelections((prev) => ({ ...prev, [currentQuestion.id]: prevSelection }));
+        }
+      }
+    } else {
+      const result = await submitVoteAction(currentQuestion.id, candidateId);
+      if (result.error) {
+        setError(result.error);
+        setSelections((prev) => ({ ...prev, [currentQuestion.id]: prevSelection }));
+      }
+    }
   };
 
   const handleNext = () => {

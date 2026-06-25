@@ -101,6 +101,50 @@ export async function submitVoteAction(
   return { success: true };
 }
 
+export async function deleteVoteAction(
+  questionId: string
+): Promise<VoteActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "You must be logged in" };
+  }
+
+  const voterId = session.user.id;
+
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+    include: {
+      box: {
+        select: { status: true, id: true },
+      },
+    },
+  });
+
+  if (!question) {
+    return { error: "Question not found" };
+  }
+
+  if (question.box.status !== BoxStatus.VOTING) {
+    return { error: "This box is not in voting mode" };
+  }
+
+  try {
+    await prisma.vote.delete({
+      where: {
+        questionId_voterId: {
+          questionId,
+          voterId,
+        },
+      },
+    });
+  } catch {
+    return { error: "No vote to delete" };
+  }
+
+  revalidatePath(`/boxes/${question.box.id}`);
+  return { success: true };
+}
+
 export async function getVotingProgress(
   boxId: string
 ): Promise<{

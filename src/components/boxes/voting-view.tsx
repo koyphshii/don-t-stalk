@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { submitVoteAction } from "@/app/actions/vote-actions";
+import { submitVoteAction, getPreviewResultsAction } from "@/app/actions/vote-actions";
 import { closeVotingAction } from "@/app/actions/box-actions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,8 +23,12 @@ import {
   LogOut,
   Loader2,
   SkipForward,
+  ScrollText,
+  ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { RevealedView } from "@/components/boxes/revealed-view";
+import type { BoxResults } from "@/lib/results";
 
 interface LiveVotesData {
   questionId: string;
@@ -89,6 +93,8 @@ export function VotingView({
   const [closeError, setCloseError] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewResults, setPreviewResults] = useState<BoxResults | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [submitted, setSubmitted] = useState(() => {
     return questions.length > 0 && questions.every((q) => q.userVote);
   });
@@ -162,6 +168,37 @@ export function VotingView({
     setIsClosing(false);
   };
 
+  const handlePreviewResults = async () => {
+    if (!isOwner) return;
+    setIsLoadingPreview(true);
+    setPreviewResults(null);
+    const result = await getPreviewResultsAction(boxId);
+    if (result) setPreviewResults(result);
+    setIsLoadingPreview(false);
+  };
+
+  if (previewResults) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPreviewResults(null)}
+            className="gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to voting
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Preview — results are not yet final
+          </p>
+        </div>
+        <RevealedView results={previewResults} />
+      </div>
+    );
+  }
+
   if (questions.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -178,19 +215,31 @@ export function VotingView({
             <div>
               <p className="text-sm font-medium">All votes are in</p>
               <p className="text-xs text-muted-foreground">
-                End voting to close submissions and preview results.
+                Preview current results or end voting when ready.
               </p>
             </div>
-            <Button
-              onClick={handleEndVoting}
-              disabled={isClosing}
-              variant="default"
-              size="sm"
-              className="gap-1"
-            >
-              <Lock className="h-3.5 w-3.5" />
-              {isClosing ? "Closing..." : "End Voting"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handlePreviewResults}
+                disabled={isLoadingPreview}
+                variant="outline"
+                size="sm"
+                className="gap-1"
+              >
+                <ScrollText className="h-3.5 w-3.5" />
+                {isLoadingPreview ? "Loading..." : "Preview Results"}
+              </Button>
+              <Button
+                onClick={handleEndVoting}
+                disabled={isClosing}
+                variant="default"
+                size="sm"
+                className="gap-1"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                {isClosing ? "Closing..." : "End Voting"}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -326,19 +375,31 @@ export function VotingView({
           <div>
             <p className="text-sm font-medium">Manage voting</p>
             <p className="text-xs text-muted-foreground">
-              End voting when everyone has submitted.
+              Preview current results or end voting when ready.
             </p>
           </div>
-          <Button
-            onClick={handleEndVoting}
-            disabled={isClosing}
-            variant="default"
-            size="sm"
-            className="gap-1"
-          >
-            <Lock className="h-3.5 w-3.5" />
-            {isClosing ? "Closing..." : "End Voting"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handlePreviewResults}
+              disabled={isLoadingPreview}
+              variant="outline"
+              size="sm"
+              className="gap-1"
+            >
+              <ScrollText className="h-3.5 w-3.5" />
+              {isLoadingPreview ? "Loading..." : "Preview Results"}
+            </Button>
+            <Button
+              onClick={handleEndVoting}
+              disabled={isClosing}
+              variant="default"
+              size="sm"
+              className="gap-1"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              {isClosing ? "Closing..." : "End Voting"}
+            </Button>
+          </div>
         </div>
       )}
 

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { BoxStatus } from "@prisma/client";
+import type { BoxResults } from "@/lib/results";
 
 export type VoteActionResult = {
   error?: string;
@@ -214,4 +215,86 @@ export async function getQuestionsForVoting(boxId: string) {
     candidates,
     currentUserId: session.user.id,
   };
+}
+
+export async function getPreviewResultsAction(boxId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+    select: { ownerId: true, title: true },
+  });
+
+  if (!box || box.ownerId !== session.user.id) return null;
+
+  const [questions, memberCount] = await Promise.all([
+    prisma.question.findMany({
+      where: { boxId, votingEnabled: true },
+      include: {
+        votes: {
+          include: {
+            voter: { select: { username: true, avatarUrl: true } },
+            candidate: { select: { id: true, username: true, avatarUrl: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.boxMember.count({ where: { boxId } }),
+  ]);
+
+  const buildTally = (
+    votes: Array<{
+      candidate: { id: string; username: string; avatarUrl: string | null };
+    }>
+  ) => {
+    const map = new Map<
+      string,
+      {
+        candidateId: string;
+        candidateUsername: string;
+        candidateAvatarUrl: string | null;
+        voteCount: number;
+      }
+    >();
+    for (const v of votes) {
+      const existing = map.get(v.candidate.id);
+      if (existing) {
+        existing.voteCount++;
+      } else {
+        map.set(v.candidate.id, {
+          candidateId: v.candidate.id,
+          candidateUsername: v.candidate.username,
+          candidateAvatarUrl: v.candidate.avatarUrl,
+          voteCount: 1,
+        });
+      }
+    }
+    return Array.from(map.values()).sort(
+      (a, b) => b.voteCount - a.voteCount
+    );
+  };
+
+  return {
+    boxTitle: box.title,
+    totalQuestions: questions.length,
+    totalMembers: memberCount,
+    questions: questions.map((q) => {
+      const tally = buildTally(q.votes);
+      return {
+        questionId: q.id,
+        questionText: q.text,
+        visibility: q.visibility,
+        votes: q.votes.map((v) => ({
+          voterUsername: v.voter.username,
+          voterAvatarUrl: v.voter.avatarUrl,
+          candidateUsername: v.candidate.username,
+          candidateAvatarUrl: v.candidate.avatarUrl,
+        })),
+        tally,
+        winner: tally[0] || null,
+      };
+    }),
+  } satisfies BoxResults;
 }

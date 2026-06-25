@@ -60,6 +60,21 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
   const isPublic = "votes" in question;
   const maxVotes = question.tally[0]?.voteCount ?? 0;
 
+  const groups: Array<{ voteCount: number; entries: typeof question.tally; rank: number }> = [];
+  let currentPos = 0;
+  for (let i = 0; i < question.tally.length; ) {
+    const voteCount = question.tally[i].voteCount;
+    const group = [question.tally[i]];
+    let j = i + 1;
+    while (j < question.tally.length && question.tally[j].voteCount === voteCount) {
+      group.push(question.tally[j]);
+      j++;
+    }
+    groups.push({ voteCount, entries: group, rank: currentPos + 1 });
+    currentPos += group.length;
+    i = j;
+  }
+
   return (
     <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
       {/* Header */}
@@ -115,31 +130,52 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
       )}
 
       {/* Tally */}
-      <div className="p-5 space-y-3">
-        {question.tally.map((entry, i) => {
-          const barWidth = maxVotes > 0 ? (entry.voteCount / maxVotes) * 100 : 0;
+      <div className="p-5 space-y-4">
+        {groups.map((group, gi) => {
+          const barWidth = maxVotes > 0 ? (group.voteCount / maxVotes) * 100 : 0;
+          const barColor =
+            gi === 0
+              ? "bg-primary"
+              : gi === 1
+              ? "bg-primary/60"
+              : gi === 2
+              ? "bg-primary/35"
+              : "bg-primary/15";
           return (
-            <div key={entry.candidateId} className="space-y-1.5">
+            <div key={group.rank} className="space-y-2">
+              {/* Candidates row */}
               <div className="flex items-center gap-2.5">
-                {i < 3 && <span className="w-5 shrink-0">{podiumIcons[i]}</span>}
-                {i >= 3 && <span className="w-5 shrink-0 text-center text-xs text-muted-foreground/40 font-mono">{i + 1}</span>}
-                <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="sm" />
-                <span className="font-medium text-sm truncate">{entry.candidateUsername}</span>
-                <span className="ml-auto text-sm font-mono text-muted-foreground tabular-nums">
-                  {entry.voteCount}
+                {/* Rank badge */}
+                <span className="w-7 shrink-0 flex justify-center">
+                  {group.rank === 1
+                    ? podiumIcons[0]
+                    : group.rank === 2
+                    ? podiumIcons[1]
+                    : group.rank === 3
+                    ? podiumIcons[2]
+                    : <span className="text-xs text-muted-foreground/40 font-mono">{group.rank}</span>}
+                </span>
+                {/* Avatars row */}
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  {group.entries.map((entry, ei) => (
+                    <div key={entry.candidateId} className="flex items-center gap-1.5 min-w-0">
+                      {ei > 0 && (
+                        <span className="text-muted-foreground/40 text-xs mx-0.5 shrink-0">+</span>
+                      )}
+                      <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="sm" />
+                      <span className="font-medium text-sm truncate max-w-[100px]">{entry.candidateUsername}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Vote count */}
+                <span className="text-sm font-mono text-muted-foreground tabular-nums shrink-0">
+                  {group.voteCount} vote{group.voteCount !== 1 ? "s" : ""}
                 </span>
               </div>
+              {/* Progress bar */}
               <div className="h-2.5 bg-muted/60 rounded-full overflow-hidden ml-7">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ease-out ${
-                    i === 0
-                      ? "bg-primary"
-                      : i === 1
-                      ? "bg-primary/60"
-                      : i === 2
-                      ? "bg-primary/35"
-                      : "bg-primary/15"
-                  }`}
+                  className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
                   style={{ width: `${barWidth}%` }}
                 />
               </div>

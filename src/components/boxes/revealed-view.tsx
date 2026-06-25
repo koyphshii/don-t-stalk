@@ -61,8 +61,9 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
   const maxVotes = question.tally[0]?.voteCount ?? 0;
 
   const groups: Array<{ voteCount: number; entries: typeof question.tally; rank: number }> = [];
-  let currentPos = 0;
+  let denseRank = 0;
   for (let i = 0; i < question.tally.length; ) {
+    denseRank++;
     const voteCount = question.tally[i].voteCount;
     const group = [question.tally[i]];
     let j = i + 1;
@@ -70,8 +71,13 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
       group.push(question.tally[j]);
       j++;
     }
-    groups.push({ voteCount, entries: group, rank: currentPos + 1 });
-    currentPos += group.length;
+    if (denseRank <= 3) {
+      groups.push({ voteCount, entries: group, rank: denseRank });
+    } else {
+      for (const entry of group) {
+        groups.push({ voteCount: entry.voteCount, entries: [entry], rank: denseRank });
+      }
+    }
     i = j;
   }
 
@@ -142,7 +148,7 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
               ? "bg-primary/35"
               : "bg-primary/15";
           return (
-            <div key={group.rank} className="space-y-2">
+            <div key={group.entries[0].candidateId} className="space-y-2">
               {/* Candidates row */}
               <div className="flex items-center gap-2.5">
                 {/* Rank badge */}

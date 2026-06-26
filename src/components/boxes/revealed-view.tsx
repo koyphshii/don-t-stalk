@@ -151,11 +151,13 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
                 <span className="text-gray-400/30 [&_svg]:h-5 [&_svg]:w-5 shrink-0">{podiumIcons[1]}</span>
               )}
             </div>
-            <div className="w-full h-24 sm:h-28 bg-gradient-to-b from-gray-400/20 to-gray-400/5 rounded-t-lg border border-gray-400/20 flex flex-col items-center justify-center gap-0.5">
+            <div className="w-full h-24 sm:h-28 bg-gradient-to-b from-gray-400/20 to-gray-400/5 rounded-t-lg border border-gray-400/20 flex flex-col items-center pt-3 pb-2">
               {secondGroup && (
-                <span className="text-base sm:text-lg font-black text-muted-foreground/70">{secondGroup.voteCount}</span>
+                <span className="text-lg sm:text-xl font-black text-gray-400">
+                  {secondGroup.voteCount} vote{secondGroup.voteCount !== 1 ? "s" : ""}
+                </span>
               )}
-              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400/40">2nd</span>
+              <span className="mt-auto text-[9px] font-bold uppercase tracking-widest text-gray-400/40">2nd</span>
             </div>
           </div>
 
@@ -172,9 +174,11 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
                 ))}
               </div>
             </div>
-            <div className="w-full h-32 sm:h-36 bg-gradient-to-b from-yellow-400/20 to-yellow-400/5 rounded-t-lg border border-yellow-400/20 flex flex-col items-center justify-center gap-0.5">
-              <span className="text-lg sm:text-xl font-black text-primary">{podiumGroup.voteCount}</span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-yellow-400/40">1st</span>
+            <div className="w-full h-32 sm:h-36 bg-gradient-to-b from-yellow-400/20 to-yellow-400/5 rounded-t-lg border border-yellow-400/20 flex flex-col items-center pt-4 pb-2">
+              <span className="text-xl sm:text-2xl font-black text-yellow-400">
+                {podiumGroup.voteCount} vote{podiumGroup.voteCount !== 1 ? "s" : ""}
+              </span>
+              <span className="mt-auto text-[9px] font-bold uppercase tracking-widest text-yellow-400/40">1st</span>
             </div>
           </div>
 
@@ -197,11 +201,13 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
                 <span className="text-amber-700/30 [&_svg]:h-5 [&_svg]:w-5 shrink-0">{podiumIcons[2]}</span>
               )}
             </div>
-            <div className="w-full h-[88px] sm:h-24 bg-gradient-to-b from-amber-700/20 to-amber-700/5 rounded-t-lg border border-amber-700/20 flex flex-col items-center justify-center gap-0.5">
+            <div className="w-full h-[88px] sm:h-24 bg-gradient-to-b from-amber-700/20 to-amber-700/5 rounded-t-lg border border-amber-700/20 flex flex-col items-center pt-3 pb-2">
               {thirdGroup && (
-                <span className="text-base sm:text-lg font-black text-muted-foreground/70">{thirdGroup.voteCount}</span>
+                <span className="text-lg sm:text-xl font-black text-amber-700">
+                  {thirdGroup.voteCount} vote{thirdGroup.voteCount !== 1 ? "s" : ""}
+                </span>
               )}
-              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-700/40">3rd</span>
+              <span className="mt-auto text-[9px] font-bold uppercase tracking-widest text-amber-700/40">3rd</span>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Calendar, Shield } from "lucide-react";
 import { AvatarForm } from "./avatar-form";
+import { ProfileWins } from "./profile-wins";
 
 async function updateAvatarAction(formData: FormData): Promise<string | null> {
   "use server";
@@ -28,21 +29,48 @@ async function updateAvatarAction(formData: FormData): Promise<string | null> {
 export default async function ProfilePage() {
   const session = await requireAuth();
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      _count: {
-        select: {
-          memberships: true,
-          questions: true,
-          votesGiven: true,
+  const [user, questions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        _count: {
+          select: {
+            memberships: true,
+            questions: true,
+            votesGiven: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.question.findMany({
+      where: {
+        votingEnabled: true,
+        box: { status: { in: ["CLOSED", "REVEALED"] } },
+      },
+      include: {
+        _count: { select: { votes: true } },
+        votes: { select: { candidateId: true } },
+      },
+    }),
+  ]);
 
   if (!user) {
     return <div>User not found</div>;
+  }
+
+  let winCount = 0;
+  for (const q of questions) {
+    const tally = new Map<string, number>();
+    for (const v of q.votes) {
+      tally.set(v.candidateId, (tally.get(v.candidateId) || 0) + 1);
+    }
+    const maxVotes = Math.max(...tally.values(), 0);
+    if (maxVotes === 0) continue;
+    for (const [candidateId, count] of tally) {
+      if (count === maxVotes) {
+        if (candidateId === user.id) winCount++;
+      }
+    }
   }
 
   return (
@@ -77,7 +105,7 @@ export default async function ProfilePage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-4 gap-3 text-center">
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-2xl font-display font-bold">
                 {user._count.memberships}
@@ -96,6 +124,7 @@ export default async function ProfilePage() {
               </p>
               <p className="text-xs text-muted-foreground">Votes Cast</p>
             </div>
+            <ProfileWins userId={user.id} initialWinCount={winCount} />
           </div>
 
           <AvatarForm currentAvatar={user.avatarUrl} updateAvatarAction={updateAvatarAction} />

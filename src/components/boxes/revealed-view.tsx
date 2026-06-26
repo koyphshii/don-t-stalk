@@ -1,8 +1,12 @@
 "use client";
 
+import { useRef, useCallback, useState } from "react";
+import { toPng } from "html-to-image";
+import JSZip from "jszip";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Award, Eye, EyeOff, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Medal, Award, Eye, EyeOff, Crown, Download, DownloadCloud, Loader2 } from "lucide-react";
 import type { BoxResults, QuestionResult } from "@/lib/results";
 
 interface RevealedViewProps {
@@ -35,6 +39,40 @@ function UserAvatar({ src, name, size = "sm" }: { src: string | null; name: stri
 }
 
 export function RevealedView({ results }: RevealedViewProps) {
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [downloadingAll, setDownloadingAll] = useState(false);
+
+  const setCardRef = useCallback(
+    (i: number) => (el: HTMLDivElement | null) => {
+      cardRefs.current[i] = el;
+    },
+    []
+  );
+
+  const downloadAllAsZip = async () => {
+    setDownloadingAll(true);
+    try {
+      const zip = new JSZip();
+      for (let i = 0; i < results.questions.length; i++) {
+        const el = cardRefs.current[i];
+        if (el) {
+          const dataUrl = await toPng(el, { quality: 1, pixelRatio: 2 });
+          const base64 = dataUrl.replace(/^data:image\/png;base64,/, "");
+          zip.file(`question-${i + 1}.png`, base64, { base64: true });
+        }
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${results.boxTitle || "results"}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloadingAll(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Hero Summary */}
@@ -45,23 +83,53 @@ export function RevealedView({ results }: RevealedViewProps) {
         <h2 className="text-3xl font-display font-bold mb-2">
           Results are in!
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mb-4">
           {results.totalQuestions} question{results.totalQuestions !== 1 ? "s" : ""} &middot;{" "}
           {results.totalMembers} member{results.totalMembers !== 1 ? "s" : ""}
         </p>
+        <Button
+          onClick={downloadAllAsZip}
+          disabled={downloadingAll}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          {downloadingAll ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <DownloadCloud className="h-4 w-4" />
+          )}
+          {downloadingAll ? "Zipping..." : "Download all as ZIP"}
+        </Button>
       </div>
 
       {/* Questions */}
       <div className="space-y-6">
         {results.questions.map((question, qi) => (
-          <QuestionCard key={question.questionId} question={question} index={qi} />
+          <QuestionCard
+            key={question.questionId}
+            question={question}
+            index={qi}
+            cardRef={setCardRef(qi)}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function QuestionCard({ question, index }: { question: QuestionResult; index: number }) {
+function QuestionCard({
+  question,
+  index,
+  cardRef,
+}: {
+  question: QuestionResult;
+  index: number;
+  cardRef: (el: HTMLDivElement | null) => void;
+}) {
+  const internalRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
   const isPublic = "votes" in question;
   const maxVotes = question.tally[0]?.voteCount ?? 0;
 
@@ -91,8 +159,23 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
   const thirdGroup = groups.find((g) => g.rank === 3);
   const listGroups = groups.filter((g) => g.rank > 3);
 
+  const downloadCard = async () => {
+    const el = internalRef.current;
+    if (!el) return;
+    setDownloading(true);
+    try {
+      const dataUrl = await toPng(el, { quality: 1, pixelRatio: 2 });
+      const a = document.createElement("a");
+      a.download = `question-${index + 1}.png`;
+      a.href = dataUrl;
+      a.click();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+    <div ref={(el) => { internalRef.current = el; cardRef(el); }} className="rounded-xl border border-border/60 bg-card overflow-hidden">
       {/* Header */}
       <div className="p-5 pb-4 border-b border-border/30">
         <div className="flex items-start justify-between gap-3">
@@ -117,14 +200,30 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
               {question.questionText}
             </h3>
           </div>
-          {podiumGroup && (
-            <Badge variant="default" className="shrink-0 gap-1.5 py-1.5 px-3 text-xs">
-              <Crown className="h-3.5 w-3.5" />
-              {podiumGroup.entries.length > 1
-                ? `${podiumGroup.entries.length}-way tie`
-                : podiumGroup.entries[0].candidateUsername}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              onClick={downloadCard}
+              disabled={downloading}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground/60 hover:text-foreground"
+              title="Download as image"
+            >
+              {downloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </Button>
+            {podiumGroup && (
+              <Badge variant="default" className="gap-1.5 py-1.5 px-3 text-xs">
+                <Crown className="h-3.5 w-3.5" />
+                {podiumGroup.entries.length > 1
+                  ? `${podiumGroup.entries.length}-way tie`
+                  : podiumGroup.entries[0].candidateUsername}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 

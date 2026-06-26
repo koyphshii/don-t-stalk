@@ -1,34 +1,56 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Card,
-  CardHeader,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, MessageSquare, BoxIcon } from "lucide-react";
+import { MembersList } from "./members-list";
 
 export default async function MembersPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const members = await prisma.user.findMany({
-    select: {
-      id: true,
-      username: true,
-      avatarUrl: true,
-      discordId: true,
-      _count: {
-        select: {
-          ownedBoxes: true,
-          questions: true,
-          memberships: true,
+  const [members, questions] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        discordId: true,
+        _count: {
+          select: {
+            ownedBoxes: true,
+            questions: true,
+            memberships: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.question.findMany({
+      where: {
+        votingEnabled: true,
+        box: { status: { in: ["CLOSED", "REVEALED"] } },
+      },
+      include: {
+        _count: { select: { votes: true } },
+        votes: { select: { candidateId: true } },
+      },
+    }),
+  ]);
+
+  // Compute win counts per user across all questions
+  const winCounts: Record<string, number> = {};
+  for (const q of questions) {
+    const tally = new Map<string, number>();
+    for (const v of q.votes) {
+      tally.set(v.candidateId, (tally.get(v.candidateId) || 0) + 1);
+    }
+    const maxVotes = Math.max(...tally.values(), 0);
+    if (maxVotes === 0) continue;
+    for (const [candidateId, count] of tally) {
+      if (count === maxVotes) {
+        winCounts[candidateId] = (winCounts[candidateId] || 0) + 1;
+      }
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -39,49 +61,19 @@ export default async function MembersPage() {
         </p>
       </div>
 
-      <div className="space-y-2">
-        {members.map((member) => (
-          <Card key={member.id} className="hover:border-primary/50 transition-colors">
-            <CardHeader className="flex flex-row items-center gap-3 py-3 px-4">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={member.avatarUrl || undefined} />
-                <AvatarFallback className="text-sm bg-secondary text-muted-foreground">
-                  {member.username[0]?.toUpperCase() ?? "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium truncate">
-                    {member.username}
-                  </span>
-                  {member.discordId && (
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-[#5865F2] border-[#5865F2]/30">
-                      Discord
-                    </Badge>
-                  )}
-                  {member.id === session.user.id && (
-                    <span className="text-[11px] text-muted-foreground">(you)</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                  <span className="flex items-center gap-1">
-                    <BoxIcon className="h-3 w-3" />
-                    {member._count.ownedBoxes} boxes
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    {member._count.questions} questions
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {member._count.memberships} memberships
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      <MembersList
+        members={members.map((m) => ({
+          id: m.id,
+          username: m.username,
+          avatarUrl: m.avatarUrl,
+          discordId: m.discordId,
+          isYou: m.id === session.user.id,
+          ownedBoxes: m._count.ownedBoxes,
+          questions: m._count.questions,
+          memberships: m._count.memberships,
+          wins: winCounts[m.id] || 0,
+        }))}
+      />
     </div>
   );
 }

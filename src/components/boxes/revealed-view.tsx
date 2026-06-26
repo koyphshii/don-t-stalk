@@ -130,68 +130,73 @@ function QuestionCard({ question, index }: { question: QuestionResult; index: nu
 
       {/* Podium */}
       {podiumGroup && (
-        <div className="px-5 py-6 bg-gradient-to-b from-primary/[0.04] to-transparent border-b border-border/30">
-          <div className="flex flex-col items-center gap-6">
-            {/* 1st place */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex items-center gap-1 text-yellow-400">
-                {podiumIcons[0]}
-                <span className="text-xs font-bold uppercase tracking-wider text-yellow-400/80">1st</span>
-              </div>
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                {podiumGroup.entries.map((entry) => (
-                  <div key={entry.candidateId} className="flex flex-col items-center gap-2">
-                    <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="xl" />
-                    <span className="font-bold text-sm text-center leading-tight">{entry.candidateUsername}</span>
+        <div className="px-5 py-8 bg-gradient-to-b from-primary/[0.04] to-transparent border-b border-border/30">
+          <div className="flex items-end justify-center gap-3 sm:gap-5">
+            {/* 2nd place */}
+            {secondGroup && (
+              <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-1.5 mb-2">
+                  {podiumIcons[1] && <span className="text-gray-400 [&_svg]:h-5 [&_svg]:w-5">{podiumIcons[1]}</span>}
+                  <div className="flex items-center justify-center gap-2 flex-wrap px-1">
+                    {secondGroup.entries.map((entry) => (
+                      <div key={entry.candidateId} className="flex flex-col items-center gap-1">
+                        <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="md" />
+                        <span className="font-semibold text-[10px] text-center leading-tight max-w-16 truncate">{entry.candidateUsername}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  <span className="text-xs font-bold text-muted-foreground/60">{secondGroup.voteCount}</span>
+                </div>
+                <div className="w-20 sm:w-24 h-24 sm:h-28 bg-gradient-to-b from-gray-400/20 to-gray-400/5 rounded-t-lg border border-gray-400/20 relative flex items-end justify-center pb-1">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400/40">2nd</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-black text-primary">{podiumGroup.voteCount}</span>
-                <span className="text-sm text-muted-foreground">
-                  vote{podiumGroup.voteCount !== 1 ? "s" : ""}
-                  {podiumGroup.entries.length > 1 ? " each" : ""}
-                </span>
+            )}
+
+            {/* 1st place */}
+            <div className="flex flex-col items-center -mx-2 sm:mx-0">
+              <div className="flex flex-col items-center gap-1.5 mb-2">
+                <div className="flex items-center justify-center">
+                  <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
+                </div>
+                <div className="flex items-center justify-center gap-2 flex-wrap px-1">
+                  {podiumGroup.entries.map((entry) => (
+                    <div key={entry.candidateId} className="flex flex-col items-center gap-1">
+                      <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="xl" />
+                      <span className="font-bold text-xs text-center leading-tight max-w-20 truncate">{entry.candidateUsername}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg sm:text-xl font-black text-primary">{podiumGroup.voteCount}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {podiumGroup.entries.length > 1 ? "ea" : "vote"}{podiumGroup.voteCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
+              <div className="w-24 sm:w-28 h-32 sm:h-36 bg-gradient-to-b from-yellow-400/20 to-yellow-400/5 rounded-t-lg border border-yellow-400/20 relative flex items-end justify-center pb-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-yellow-400/40">1st</span>
               </div>
             </div>
 
-            {/* 2nd & 3rd */}
-            {(secondGroup || thirdGroup) && (
-              <div className="flex items-end gap-6 sm:gap-12">
-                {secondGroup && (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-1 text-gray-400">
-                      {podiumIcons[1]}
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400/80">2nd</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      {secondGroup.entries.map((entry) => (
-                        <div key={entry.candidateId} className="flex flex-col items-center gap-1.5">
-                          <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="lg" />
-                          <span className="font-semibold text-xs text-center leading-tight">{entry.candidateUsername}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <span className="text-base font-bold text-muted-foreground">{secondGroup.voteCount}</span>
+            {/* 3rd place */}
+            {thirdGroup && (
+              <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-1.5 mb-2">
+                  {podiumIcons[2] && <span className="text-amber-700 [&_svg]:h-5 [&_svg]:w-5">{podiumIcons[2]}</span>}
+                  <div className="flex items-center justify-center gap-2 flex-wrap px-1">
+                    {thirdGroup.entries.map((entry) => (
+                      <div key={entry.candidateId} className="flex flex-col items-center gap-1">
+                        <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="md" />
+                        <span className="font-semibold text-[10px] text-center leading-tight max-w-16 truncate">{entry.candidateUsername}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-                {thirdGroup && (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-1 text-amber-700">
-                      {podiumIcons[2]}
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700/80">3rd</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      {thirdGroup.entries.map((entry) => (
-                        <div key={entry.candidateId} className="flex flex-col items-center gap-1.5">
-                          <UserAvatar src={entry.candidateAvatarUrl} name={entry.candidateUsername} size="lg" />
-                          <span className="font-semibold text-xs text-center leading-tight">{entry.candidateUsername}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <span className="text-base font-bold text-muted-foreground">{thirdGroup.voteCount}</span>
-                  </div>
-                )}
+                  <span className="text-xs font-bold text-muted-foreground/60">{thirdGroup.voteCount}</span>
+                </div>
+                <div className="w-[72px] sm:w-20 h-[88px] sm:h-24 bg-gradient-to-b from-amber-700/20 to-amber-700/5 rounded-t-lg border border-amber-700/20 relative flex items-end justify-center pb-1">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-amber-700/40">3rd</span>
+                </div>
               </div>
             )}
           </div>
